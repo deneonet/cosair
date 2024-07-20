@@ -12,6 +12,8 @@ A 2D Game Engine, written in C++, following ["The Cherno's Game Engine Series"](
 - Clone this repo
 - Run `win-generate.bat` inside `scripts`
 - Go back & Open the Solution file
-- Hit Run & Play Flappybird
+- Hit Run
+- Build fails first time, just run it again (i'm going to fix this)
+- Play Flappybird
 
 [Sandbox & Flappybird](Sandbox/src/README.md)
