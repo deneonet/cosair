@@ -1,0 +1,12 @@
+[submodule "Cosair/vendor/spdlog"]
+	path = Cosair/vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "Cosair/vendor/GLFW"]
+	path = Cosair/vendor/GLFW
+	url = https://github.com/glfw/glfw
+[submodule "Cosair/vendor/imgui"]
+	path = Cosair/vendor/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "Cosair/vendor/glm"]
+	path = Cosair/vendor/glm
+	url = https://github.com/g-truc/glm
