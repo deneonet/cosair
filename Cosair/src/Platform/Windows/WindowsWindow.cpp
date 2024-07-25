@@ -22,10 +22,13 @@ namespace Cosair {
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProps& props) {
+		CR_PROFILE_FUNCTION();
 		Init(props);
 	}
 
 	WindowsWindow::~WindowsWindow() {
+		CR_PROFILE_FUNCTION();
+
 		s_GLFWWindowCount--;
 		if (s_GLFWWindowCount == 0) {
 			CR_CORE_INFO("Terminating GLFW\n");
@@ -34,6 +37,8 @@ namespace Cosair {
 	}
 
 	void WindowsWindow::Init(const WindowProps& props) {
+		CR_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -52,7 +57,7 @@ namespace Cosair {
 	#endif
 
 		CR_CORE_INFO("Creating window {0} ({1}, {2})\n", props.Title, props.Width, props.Height);
-		m_Window = glfwCreateWindow(props.Width, props.Height, m_Data.Title.c_str(), nullptr, nullptr); 
+		m_Window = glfwCreateWindow(props.Width, props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		++s_GLFWWindowCount;
 
 		m_RenderingContext = new OpenGLContext(m_Window);
@@ -67,7 +72,7 @@ namespace Cosair {
 			data.Width = width;
 			data.Height = height;
 
-			WindowResizeEvent event (width, height);
+			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
 		});
 
@@ -79,19 +84,22 @@ namespace Cosair {
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			
+
 			switch (action) {
-			case GLFW_PRESS: {
+			case GLFW_PRESS:
+			{
 				KeyPressedEvent event(key, 0);
 				data.EventCallback(event);
 				break;
 			}
-			case GLFW_RELEASE: {
+			case GLFW_RELEASE:
+			{
 				KeyReleasedEvent event(key);
 				data.EventCallback(event);
 				break;
 			}
-			case GLFW_REPEAT: {
+			case GLFW_REPEAT:
+			{
 				KeyPressedEvent event(key, 1);
 				data.EventCallback(event);
 				break;
@@ -103,12 +111,14 @@ namespace Cosair {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action) {
-			case GLFW_PRESS: {
+			case GLFW_PRESS:
+			{
 				MouseButtonPressedEvent event(button);
 				data.EventCallback(event);
 				break;
 			}
-			case GLFW_RELEASE: {
+			case GLFW_RELEASE:
+			{
 				MouseButtonReleasedEvent event(button);
 				data.EventCallback(event);
 				break;
@@ -130,16 +140,22 @@ namespace Cosair {
 	}
 
 	void WindowsWindow::Shutdown() {
+		CR_PROFILE_FUNCTION();
+
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
 
 	void WindowsWindow::OnUpdate() {
+		CR_PROFILE_FUNCTION();
+
 		glfwPollEvents();
 		m_RenderingContext->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {
+		CR_PROFILE_FUNCTION();
+
 		glfwSwapInterval(enabled ? 1 : 0);
 		m_Data.VSync = enabled;
 	}

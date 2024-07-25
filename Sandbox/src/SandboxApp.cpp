@@ -1,65 +1,53 @@
-// #define RUN_SANDBOX
+#define RUN_SANDBOX
 #ifdef RUN_SANDBOX
 #include "Cosair.h"
 
 #include <imgui/imgui.h>
-#include <glm/ext/matrix_transform.hpp>
 
-template<typename Fn>
-class Timer {
-public:
-	Timer(const char* name, Fn&& fn) : m_Name(name), m_Stopped(false), m_Fn(fn) {
-		m_StartTimepoint = std::chrono::high_resolution_clock::now();
-	}
+// SANDBOX:
+// Just to play around, with bad practices to showcase some features.
 
-	~Timer() {
-		if (!m_Stopped)
-			Stop();
-	}
-
-	void Stop() {
-		auto endTimepoint = std::chrono::high_resolution_clock::now();
-
-		long long start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch().count();
-		long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
-
-		m_Stopped = true;
-
-		float duration = (end - start) * 0.001f;
-		m_Fn({ m_Name, duration });
-	}
-private:
-	Fn m_Fn;
-	bool m_Stopped;
-	const char* m_Name;
-	std::chrono::time_point<std::chrono::steady_clock> m_StartTimepoint;
-};
-
-#define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) { m_ProfileResults.push_back(profileResult); })
+// max is 400, because "only" 400 quads are rendered
+constexpr static int TEXTURES_TO_RENDER = 400; // + 2
 
 class ExampleLayer : public Cosair::Layer {
 public:
-	ExampleLayer() : Layer("Example") {}
+	ExampleLayer() : Layer("Example") { }
 
 	void OnAttach() override {
-		PROFILE_SCOPE("ExampleLayer::OnAttach");
+		CR_PROFILE_FUNCTION();
 
 		Cosair::MaterialRef anyaMaterial = MAKE_MATERIAL_REF();
 		anyaMaterial->SetTexture(CREATE_TEXTURE2D("assets/textures/Anya.png"));
 		Cosair::MaterialLibrary::Add("Anya", anyaMaterial);
 
-		m_AnyaTransform = MAKE_TRANSFORM_REF(glm::vec3(-0.6f, -0.6f, 0), glm::vec3(0), glm::vec3(0.7f));
+		m_AnyaTransform = MAKE_TRANSFORM_REF(glm::vec3(-0.8f, -0.8f, 0), glm::vec3(0), glm::vec3(0.7f));
 
-		Cosair::MaterialRef luffyMaterial = MAKE_MATERIAL_REF();
-		luffyMaterial->SetTexture(CREATE_TEXTURE2D("assets/textures/Luffy.png"));
-		Cosair::MaterialLibrary::Add("Luffy", luffyMaterial);
+		m_TextureAtlasMaterial = MAKE_MATERIAL_REF();
+		Cosair::TextureAtlasRef textureAtlas = MAKE_TEXTURE_ATLAS_REF("assets/textures/RPGpack_sheet_2X.png");
+		textureAtlas->AddSubTexture("Stair", { 7, 6 }, { 128, 128 });
+		textureAtlas->AddSubTexture("Fence", { 6, 0 }, { 128, 128 });
+		textureAtlas->AddSubTexture("Roof", { 0, 4 }, { 128, 128 }, { 2, 3 });
 
-		m_LuffyTransform = MAKE_TRANSFORM_REF();
-		m_LuffyTransform->SetScale(glm::vec3(0.7f));
+		m_TextureAtlasMaterial->SetTextureAtlas(textureAtlas);
+
+		// "Stair", "Tree" or "Roof"
+		m_TextureAtlasMaterial->SetSubTexture("Stair");
+
+		m_TempMaterial = MAKE_MATERIAL_REF();
+
+		// Bad practice: Use a TextureAtlas instead, but needed to showcase the bindless texture extension.
+		int offset = 0;
+		for (int i = 0; i < TEXTURES_TO_RENDER; i++) {
+			if (offset == 10)
+				offset = 0;
+			Cosair::Texture2dLibrary::Add(std::to_string(i).c_str(), CREATE_TEXTURE2D("assets/textures/" + std::to_string(offset) + ".png"));
+			offset++;
+		}
 	}
 
 	void OnUpdate(Cosair::Timestep ts) override {
-		PROFILE_SCOPE("ExampleLayer::OnUpdate");
+		CR_PROFILE_FUNCTION();
 
 		static int framesPerSecond = 0;
 		static float lastTime = 0.0f;
@@ -75,70 +63,78 @@ public:
 		}
 
 		{
-			PROFILE_SCOPE("Input Polling");
+			CR_PROFILE_SCOPE("Input Handling");
 
-			if (Cosair::Input::IsKeyPressed(CR_KEY_W)) {
-				auto pos = m_Camera.GetPosition();
-				pos.y += m_CameraMoveSpeed * ts;
-				m_Camera.SetPosition(pos);
-			}
-			else if (Cosair::Input::IsKeyPressed(CR_KEY_S)) {
-				auto pos = m_Camera.GetPosition();
-				pos.y -= m_CameraMoveSpeed * ts;
-				m_Camera.SetPosition(pos);
-			}
+			if (Cosair::Input::IsKeyPressed(CR_KEY_W))
+				m_Camera.SetPositionY(
+					m_Camera.GetPositionY() + m_CameraMoveSpeed * ts
+				);
+			else if (Cosair::Input::IsKeyPressed(CR_KEY_S))
+				m_Camera.SetPositionY(
+					m_Camera.GetPositionY() - m_CameraMoveSpeed * ts
+				);
 
-			if (Cosair::Input::IsKeyPressed(CR_KEY_A)) {
-				auto pos = m_Camera.GetPosition();
-				pos.x -= m_CameraMoveSpeed * ts;
-				m_Camera.SetPosition(pos);
-			}
-			else if (Cosair::Input::IsKeyPressed(CR_KEY_D)) {
-				auto pos = m_Camera.GetPosition();
-				pos.x += m_CameraMoveSpeed * ts;
-				m_Camera.SetPosition(pos);
-			}
+			if (Cosair::Input::IsKeyPressed(CR_KEY_A))
+				m_Camera.SetPositionX(
+					m_Camera.GetPositionX() - m_CameraMoveSpeed * ts
+				);
+			else if (Cosair::Input::IsKeyPressed(CR_KEY_D))
+				m_Camera.SetPositionX(
+					m_Camera.GetPositionX() + m_CameraMoveSpeed * ts
+				);
 
-			if (Cosair::Input::IsKeyPressed(CR_KEY_J)) {
+			if (Cosair::Input::IsKeyPressed(CR_KEY_J))
 				m_Camera.SetRotation(
 					m_Camera.GetRotation() + m_CameraRotationSpeed * ts
 				);
-			}
-			else if (Cosair::Input::IsKeyPressed(CR_KEY_K)) {
+			else if (Cosair::Input::IsKeyPressed(CR_KEY_K))
 				m_Camera.SetRotation(
 					m_Camera.GetRotation() - m_CameraRotationSpeed * ts
 				);
-			}
 
-			if (Cosair::Input::IsKeyPressed(CR_KEY_I)) {
-				auto pos = m_LuffyTransform->GetPosition();
-				pos.x -= m_CameraMoveSpeed * ts;
-				m_LuffyTransform->SetPosition(pos);
-			}
-			else if (Cosair::Input::IsKeyPressed(CR_KEY_O)) {
-				auto pos = m_LuffyTransform->GetPosition();
-				pos.x += m_CameraMoveSpeed * ts;
-				m_LuffyTransform->SetPosition(pos);
-			}
+			if (Cosair::Input::IsKeyPressed(CR_KEY_I))
+				m_AnyaTransform->SetPositionX(
+					m_AnyaTransform->GetPositionX() - m_CameraMoveSpeed * ts
+				);
+			else if (Cosair::Input::IsKeyPressed(CR_KEY_O))
+				m_AnyaTransform->SetPositionX(
+					m_AnyaTransform->GetPositionX() + m_CameraMoveSpeed * ts
+				);
 
-			if (Cosair::Input::IsKeyPressed(CR_KEY_Y)) {
-				auto rot = m_LuffyTransform->GetRotation();
-				rot.z += m_CameraRotationSpeed * ts;
-				m_LuffyTransform->SetRotation(rot);
-			}
-			else if (Cosair::Input::IsKeyPressed(CR_KEY_U)) {
-				auto rot = m_LuffyTransform->GetRotation();
-				rot.z -= m_CameraRotationSpeed * ts;
-				m_LuffyTransform->SetRotation(rot);
-			}
+			if (Cosair::Input::IsKeyPressed(CR_KEY_Y))
+				m_AnyaTransform->SetRotationZ(
+					m_AnyaTransform->GetRotationZ() + m_CameraRotationSpeed * ts
+				);
+			else if (Cosair::Input::IsKeyPressed(CR_KEY_U))
+				m_AnyaTransform->SetRotationZ(
+					m_AnyaTransform->GetRotationZ() - m_CameraRotationSpeed * ts
+				);
 		}
 
 		{
-			PROFILE_SCOPE("Rendering");
+			CR_PROFILE_SCOPE("Rendering");
 
+			Cosair::Renderer2D::ResetStats();
 			Cosair::Renderer2D::BeginScene(m_Camera);
 
-			Cosair::Renderer2D::DrawQuad("Luffy", m_LuffyTransform);
+			static Cosair::TransformRef quadsTransform = MAKE_TRANSFORM_REF(glm::vec3(0), glm::vec3(0), glm::vec3(0.45f, 0.45f, 1));
+
+			// Bad practice: Many unnecessary quads and std::to_string <- bad
+			int index = 0;
+			for (float y = -5.0f; y < 5.0f; y += 0.5f) {
+				for (float x = -5.0f; x < 5.0f; x += 0.5f) {
+					glm::vec4 color = { (x + 5) / 10, 0.4f, (y + 5) / 10, 1 };
+					if (index >= TEXTURES_TO_RENDER)
+						index = 0;
+					m_TempMaterial->SetColor(color);
+					m_TempMaterial->SetTexture(Cosair::Texture2dLibrary::Load(std::to_string(index).c_str()));
+					quadsTransform->SetPosition(glm::vec3(x, y, 0));
+					Cosair::Renderer2D::DrawQuad(m_TempMaterial, quadsTransform);
+					index++;
+				}
+			}
+
+			Cosair::Renderer2D::DrawQuad(m_TextureAtlasMaterial, MAKE_TRANSFORM_REF());
 			Cosair::Renderer2D::DrawQuad("Anya", m_AnyaTransform);
 
 			Cosair::Renderer2D::EndScene();
@@ -146,7 +142,7 @@ public:
 	}
 
 	void OnImGuiRender() override {
-		PROFILE_SCOPE("ExampleLayer::OnImGuiRender");
+		CR_PROFILE_FUNCTION();
 
 		ImGui::Begin("Cosair.");
 
@@ -155,28 +151,21 @@ public:
 			fps << "FPS: " << m_Fps;
 			ImGui::Text(fps.str().c_str());
 
-			ImGui::Text("\nProfiling (us = microseconds)\n");
+			auto& stats = Cosair::Renderer2D::GetStats();
+
+			ImGui::Spacing();
+			ImGui::Spacing();
 			ImGui::Spacing();
 
-			for (auto& result : m_ProfileResults) {
-				char label[50];
-				strcpy(label, "%.3fus   ");
-				strcat(label, result.Name);
-				ImGui::Text(label, result.Time);
-			}
-		}
-		m_ProfileResults.clear();
+			ImGui::Text("Quad Count: %d", stats.QuadCount);
+			ImGui::Text("Draw Calls: %d", stats.DrawCalls);
 
-		if (ImGui::CollapsingHeader("Controls")) {
-			ImGui::Text("i = Move Luffy Left      o = Move Luffy Right");
-			ImGui::Text("z = Rotate Luffy Left    u = Rotate Luffy Right");
 			ImGui::Spacing();
 			ImGui::Spacing();
-			ImGui::Text("w = Move Forward         s = Move Backward");
-			ImGui::Text("a = Move Left            d = Move Right");
-			ImGui::Spacing();
-			ImGui::Spacing();
-			ImGui::Text("j = Rotate Left          k = Rotate Right");
+
+			ImGui::Text("Total Index Count:   %d", stats.GetTotalIndexCount());
+			ImGui::Text("Total Vertex Count:  %d", stats.GetTotalVertexCount());
+			ImGui::Text("Total Texture Count: %d", TEXTURES_TO_RENDER + 2);
 		}
 
 		if (ImGui::CollapsingHeader("Settings")) {
@@ -187,6 +176,36 @@ public:
 				Cosair::Window& window = Cosair::Application::Get().GetWindow();
 				window.SetVSync(m_VSync);
 			}
+			const char* items[] = { "Stair", "Fence", "Roof" };
+			static const char* current_item = nullptr;
+
+			if (ImGui::BeginCombo("SubTexture", current_item)) {
+				for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+					bool is_selected = (current_item == items[n]);
+					if (ImGui::Selectable(items[n], is_selected)) {
+						current_item = items[n];
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			if (current_item) {
+				m_TextureAtlasMaterial->SetSubTexture(current_item);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Controls")) {
+			ImGui::Text("i = Move Anya Left      o = Move Anya Right");
+			ImGui::Text("z = Rotate Anya Left    u = Rotate Anya Right");
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Text("w = Move Forward         s = Move Backward");
+			ImGui::Text("a = Move Left            d = Move Right");
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Text("j = Rotate Left          k = Rotate Right");
 		}
 
 		ImGui::End();
@@ -200,15 +219,10 @@ private:
 
 	Cosair::OrthographicCamera m_Camera;
 
-	Cosair::TransformRef m_AnyaTransform;
-	Cosair::TransformRef m_LuffyTransform;
+	Cosair::MaterialRef m_TempMaterial;
+	Cosair::MaterialRef m_TextureAtlasMaterial;
 
-	struct ProfileResult {
-		const char* Name;
-		float Time;
-	};
-	std::vector<ProfileResult> m_ProfileResults;
-	std::vector<ProfileResult> m_ProfileResultsCache;
+	Cosair::TransformRef m_AnyaTransform;
 };
 
 class Sandbox : public Cosair::Application {

@@ -10,14 +10,14 @@ namespace Cosair {
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(int keyCode) : m_KeyCode(keyCode) {}
+		KeyEvent(int keyCode) : m_KeyCode(keyCode) { }
 
 		int m_KeyCode;
 	};
 
 	class KeyPressedEvent : public KeyEvent {
 	public:
-		KeyPressedEvent(int keyCode, int repeatCount) : KeyEvent(keyCode), m_RepeatCount(repeatCount) {}
+		KeyPressedEvent(int keyCode, int repeatCount) : KeyEvent(keyCode), m_RepeatCount(repeatCount) { }
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
 
@@ -34,7 +34,7 @@ namespace Cosair {
 
 	class KeyReleasedEvent : public KeyEvent {
 	public:
-		KeyReleasedEvent(int keyCode) : KeyEvent(keyCode) {}
+		KeyReleasedEvent(int keyCode) : KeyEvent(keyCode) { }
 
 		std::string ToString() const override {
 			std::stringstream ss;

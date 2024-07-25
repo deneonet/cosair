@@ -1,8 +1,8 @@
 #include "crpch.h"
 #include "Texture.h"
 
-#include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
+#include "RendererAPI.h"
 
 namespace Cosair {
 

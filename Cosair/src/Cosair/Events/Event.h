@@ -5,7 +5,7 @@
 #include <spdlog/formatter.h>
 
 namespace Cosair {
-	
+
 	enum class EventType {
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
@@ -16,12 +16,12 @@ namespace Cosair {
 
 	enum EventCategory {
 		None = 0,
-		EventCategoryApplication   = BIT(0),
-		EventCategoryWindow        = BIT(1),
-		EventCategoryInput         = BIT(2),
-		EventCategoryKeyboard      = BIT(3),
-		EventCategoryMouse         = BIT(4),
-		EventCategoryMouseButton   = BIT(5),
+		EventCategoryApplication = BIT(0),
+		EventCategoryWindow = BIT(1),
+		EventCategoryInput = BIT(2),
+		EventCategoryKeyboard = BIT(3),
+		EventCategoryMouse = BIT(4),
+		EventCategoryMouseButton = BIT(5),
 	};
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
@@ -49,7 +49,7 @@ virtual const char* GetName() const override { return #type; }
 
 	class EventDispatcher {
 	public:
-		EventDispatcher(Event& event) : m_Event(event) {}
+		EventDispatcher(Event& event) : m_Event(event) { }
 
 		template<typename T, typename F>
 		bool Dispatch(const F& func) {

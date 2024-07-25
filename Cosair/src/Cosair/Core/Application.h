@@ -1,17 +1,17 @@
 #pragma once
 
 #include "Layer.h"
-#include "Window.h"
-#include "Timestep.h"
 #include "LayerStack.h"
+#include "Timestep.h"
+#include "Window.h"
 
 #include "Cosair/Core.h"
 
 #include "Cosair/Debug/ImGuiLayer.h"
 
 #include "Cosair/Renderer/Buffer.h"
-#include "Cosair/Renderer/Shader.h"
 #include "Cosair/Renderer/Camera.h"
+#include "Cosair/Renderer/Shader.h"
 #include "Cosair/Renderer/VertexArray.h"
 
 #include "Cosair/Events/Event.h"
@@ -23,8 +23,7 @@ int main(int argc, char** argv);
 
 namespace Cosair {
 
-	class Application
-	{
+	class Application {
 	public:
 		Application();
 		virtual ~Application();

@@ -1,8 +1,8 @@
 #include "crpch.h"
 #include "VertexArray.h"
 
-#include "RendererAPI.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
+#include "RendererAPI.h"
 
 namespace Cosair {
 

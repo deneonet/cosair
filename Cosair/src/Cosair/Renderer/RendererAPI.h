@@ -1,7 +1,8 @@
 #pragma once
 
-#include "glm/glm.hpp"
 #include "VertexArray.h"
+
+#include <glm/glm.hpp>
 
 namespace Cosair {
 
@@ -19,7 +20,8 @@ namespace Cosair {
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 
 		virtual void DrawIndexed(const VertexArrayRef& vertexArray) = 0;
-	
+		virtual void DrawIndexed(const VertexArrayRef& vertexArray, uint32_t indiciesCount) = 0;
+
 		inline static API GetCurrentAPI() { return s_API; }
 		inline static void SetCurrentAPI(API api) { s_API = api; }
 	private:

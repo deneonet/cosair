@@ -1,18 +1,18 @@
 #include "crpch.h"
 #include "OpenGLContext.h"
 
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace Cosair {
 
-	OpenGLContext::OpenGLContext(GLFWwindow* window) : m_Handle(window)
-	{
+	OpenGLContext::OpenGLContext(GLFWwindow* window) : m_Handle(window) {
 		CR_CORE_ASSERT(window, "Window is null");
 	}
 
-	void OpenGLContext::Init()
-	{
+	void OpenGLContext::Init() {
+		CR_PROFILE_FUNCTION();
+
 		glfwMakeContextCurrent(m_Handle);
 		int success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		CR_CORE_ASSERT(success, "Failed to initialize glad");
@@ -30,8 +30,8 @@ namespace Cosair {
 		CR_CORE_ASSERT(versionMajor > 4 || (versionMajor == 4 && versionMinor >= 5), "Cosair requires at least OpenGL version 4.5");
 	}
 
-	void OpenGLContext::SwapBuffers()
-	{
+	void OpenGLContext::SwapBuffers() {
+		CR_PROFILE_FUNCTION();
 		glfwSwapBuffers(m_Handle);
 	}
 

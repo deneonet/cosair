@@ -1,17 +1,18 @@
 #pragma once
 
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <utility>
-#include <algorithm>
-#include <functional>
 
-#include <string>
 #include <sstream>
-#include <vector>
-#include <unordered_set>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
+#include "Cosair/Debug/Instrumentor.h"
 #include "Cosair/Debug/Log.h"
 
 #ifdef CR_PLATFORM_WINDOWS

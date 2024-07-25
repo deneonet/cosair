@@ -1,8 +1,8 @@
 #include "crpch.h"
 #include "ImGuiLayer.h"
 
-#include "Cosair/Core/Input.h"
 #include "Cosair/Core/Application.h"
+#include "Cosair/Core/Input.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -11,15 +11,16 @@ namespace Cosair {
 
 	bool ImGuiLayer::attached = false;
 
-	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") {}
+	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer") { }
 
 #ifdef CR_DIST
-	void ImGuiLayer::OnAttach() {}
-	void ImGuiLayer::OnDetach() {}
-	void ImGuiLayer::Begin() {}
-	void ImGuiLayer::End() {}
+	void ImGuiLayer::OnAttach() { }
+	void ImGuiLayer::OnDetach() { }
+	void ImGuiLayer::Begin() { }
+	void ImGuiLayer::End() { }
 #else
 	void ImGuiLayer::OnAttach() {
+		CR_PROFILE_FUNCTION();
 		CR_CORE_ASSERT(!attached, "ImGuiLayer already attached, do not instantiate one: \"new ImGuiLayer();\"");
 		if (attached) return;
 
@@ -39,18 +40,24 @@ namespace Cosair {
 	}
 
 	void ImGuiLayer::OnDetach() {
+		CR_PROFILE_FUNCTION();
+
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
 	void ImGuiLayer::Begin() {
+		CR_PROFILE_FUNCTION();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
 
 	void ImGuiLayer::End() {
+		CR_PROFILE_FUNCTION();
+
 		ImGuiIO& io = ImGui::GetIO();
 		Window& window = Application::Get().GetWindow();
 		io.DisplaySize = ImVec2((float)window.GetWidth(), (float)window.GetHeight());
@@ -60,5 +67,5 @@ namespace Cosair {
 	}
 #endif
 
-	void ImGuiLayer::OnImGuiRender() {}
+	void ImGuiLayer::OnImGuiRender() { }
 }

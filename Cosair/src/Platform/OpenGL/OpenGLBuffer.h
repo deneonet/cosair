@@ -6,33 +6,59 @@
 
 namespace Cosair {
 
+	// VertexBuffer
+
 	class OpenGLVertexBuffer : public VertexBuffer {
 	public:
-		OpenGLVertexBuffer(const float* data, uint32_t size);
-		inline virtual ~OpenGLVertexBuffer() override { glDeleteBuffers(1, &m_VertexBufferID); }
+		OpenGLVertexBuffer(uint32_t size);
+		OpenGLVertexBuffer(const void* data, uint32_t size);
+		virtual ~OpenGLVertexBuffer() override;
 
-		inline virtual void Bind() const override { glBindBuffer(GL_ARRAY_BUFFER, m_VertexBufferID); }
-		inline virtual void Unbind() const override { glBindBuffer(0, m_VertexBufferID); }
+		virtual void Bind() override;
+		virtual void Unbind() override;
 
+		// Sets the data of the vertex buffer using the given parameters at the offset provided (default: 0)
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+
+		inline virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 		inline virtual const BufferLayout& GetLayout() const override { return m_Layout; };
-		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 	private:
 		BufferLayout m_Layout;
-		uint32_t m_VertexBufferID;
+		uint32_t m_VertexBufferId;
 	};
+
+	// IndexBuffer
 
 	class OpenGLIndexBuffer : public IndexBuffer {
 	public:
 		OpenGLIndexBuffer(const uint32_t* data, uint32_t count);
-		inline virtual ~OpenGLIndexBuffer() override { glDeleteBuffers(1, &m_IndexBufferID); }
+		virtual ~OpenGLIndexBuffer() override;
+
+		virtual void Bind() override;
+		virtual void Unbind() override;
 
 		inline virtual uint32_t GetCount() const { return m_Count; }
-
-		inline virtual void Bind() const override { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBufferID); }
-		inline virtual void Unbind() const override { glBindBuffer(0, m_IndexBufferID); }
 	private:
-		uint32_t m_IndexBufferID;
 		uint32_t m_Count;
+		uint32_t m_IndexBufferId;
+	};
+
+	// ShaderStorageBuffer
+
+	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer {
+	public:
+		OpenGLShaderStorageBuffer(uint32_t size);
+		OpenGLShaderStorageBuffer(const void* data, uint32_t size);
+		virtual ~OpenGLShaderStorageBuffer() override;
+
+		virtual void Bind() override;
+		virtual void Unbind() override;
+		virtual void BindBase(uint32_t index) override;
+
+		// Sets the data of the shader storage buffer using the given parameters at the offset provided (default: 0)
+		virtual void SetData(const uint64_t* data, uint32_t size, uint32_t offset = 0) override;
+	private:
+		uint32_t m_ShaderStorageBufferId;
 	};
 
 }

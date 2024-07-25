@@ -2,7 +2,9 @@
 
 #include "Cosair/Core.h"
 
+#if 1 // VS formats the includes, so the below include would be at the bottom, which would result into linking errors
 #include <spdlog/spdlog.h>
+#endif
 #include <spdlog/fmt/ostr.h>
 
 namespace Cosair {

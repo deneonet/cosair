@@ -7,7 +7,7 @@ namespace Cosair {
 
 	class MouseScrolledEvent : public Event {
 	public:
-		MouseScrolledEvent(double xOffset, double yOffset) : m_xOffset(xOffset), m_yOffset(yOffset) {}
+		MouseScrolledEvent(double xOffset, double yOffset) : m_xOffset(xOffset), m_yOffset(yOffset) { }
 
 		inline double GetXOffset() const { return m_xOffset; }
 		inline double GetYOffset() const { return m_yOffset; }
@@ -19,7 +19,7 @@ namespace Cosair {
 		}
 
 		EVENT_CLASS_TYPE(MouseScrolled)
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
+			EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
 		double m_xOffset;
 		double m_yOffset;
@@ -27,7 +27,7 @@ namespace Cosair {
 
 	class MouseMovedEvent : public Event {
 	public:
-		MouseMovedEvent(double xPos, double yPos) : m_xPos(xPos), m_yPos(yPos) {}
+		MouseMovedEvent(double xPos, double yPos) : m_xPos(xPos), m_yPos(yPos) { }
 
 		inline double GetX() const { return m_xPos; }
 		inline double GetY() const { return m_yPos; }
@@ -39,7 +39,7 @@ namespace Cosair {
 		}
 
 		EVENT_CLASS_TYPE(MouseMoved)
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
+			EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 	private:
 		double m_xPos;
 		double m_yPos;
@@ -51,14 +51,14 @@ namespace Cosair {
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouseButton | EventCategoryInput)
 	protected:
-		MouseButtonEvent(int button) : m_Button(button) {}
+		MouseButtonEvent(int button) : m_Button(button) { }
 
 		int m_Button;
 	};
 
 	class MouseButtonPressedEvent : public MouseButtonEvent {
 	public:
-		MouseButtonPressedEvent(int button) : MouseButtonEvent(button) {}
+		MouseButtonPressedEvent(int button) : MouseButtonEvent(button) { }
 
 		std::string ToString() const override {
 			std::stringstream ss;
@@ -71,7 +71,7 @@ namespace Cosair {
 
 	class MouseButtonReleasedEvent : public MouseButtonEvent {
 	public:
-		MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) {}
+		MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) { }
 
 		std::string ToString() const override {
 			std::stringstream ss;

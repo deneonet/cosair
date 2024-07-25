@@ -6,8 +6,8 @@
 #include "Cosair/Core/Application.h"
 #include "Cosair/Core/Timestep.h"
 
-#include "Cosair/Core/Layer.h"
 #include "Cosair/Core/Input.h"
+#include "Cosair/Core/Layer.h"
 //////////////////////////////
 
 // Debug /////////////////////
@@ -30,11 +30,9 @@
 #include "Cosair/Renderer/VertexArray.h"
 
 #include "Cosair/Renderer/Texture.h"
-#include "Cosair/Renderer/Texture2dLibrary.h"
-
 #include "Cosair/Renderer/Material.h"
-#include "Cosair/Renderer/MaterialLibrary.h"
 
+#include "Cosair/Renderer/Libraries.h"
 #include "Cosair/Renderer/Camera.h"
 //////////////////////////////
 
@@ -46,6 +44,7 @@
 
 #define MAKE_MATERIAL_REF std::make_shared<Cosair::Material>
 #define MAKE_TRANSFORM_REF std::make_shared<Cosair::Transform>
+#define MAKE_TEXTURE_ATLAS_REF std::make_shared<Cosair::TextureAtlas>
 
 #define CREATE_SHADER Cosair::Shader::Create
 #define CREATE_TEXTURE2D Cosair::Texture2D::Create
