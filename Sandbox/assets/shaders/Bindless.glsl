@@ -36,4 +36,6 @@ in float v_TexIndex;
 
 void main() {
     color = texture(textures[int(v_TexIndex)], v_TexCoord) * v_Color;
+    if (color.a == 0.0)
+        discard;
 }

@@ -1,111 +1,154 @@
 #pragma once
 
-#include "Shader.h"
-
 #include <initializer_list>
 
-namespace Cosair {
+#include "shader.h"
 
-	struct BufferElement {
-		std::string Name;
-		uint32_t Size;
-		uint32_t Offset;
-		ShaderType Type;
-		bool Normalized;
+namespace cosair {
 
-		BufferElement(ShaderType type, const std::string& name, bool normalized = false)
-			: Name(name), Type(type), Size(GetShaderTypeSize(type)), Offset(0), Normalized(normalized) { }
+struct BufferElement {
+  size_t size;
+  size_t offset;
+  ShaderType type;
+  bool normalized;
+  std::string name;
 
-		uint8_t GetComponentCount() const {
-			switch (Type) {
-			case ShaderType::Float:    return 1;
-			case ShaderType::Float2:     return 2;
-			case ShaderType::Float3:     return 3;
-			case ShaderType::Float4:     return 4;
-			case ShaderType::Matrix3:     return 3;
-			case ShaderType::Matrix4:     return 4;
-			case ShaderType::Int:      return 1;
-			case ShaderType::Int2:    return 2;
-			case ShaderType::Int3:    return 3;
-			case ShaderType::Int4:    return 4;
-			case ShaderType::Bool:     return 1;
-			default:                   return 0;
-			}
-		}
-	};
+  BufferElement(ShaderType type, const std::string& name,
+                bool normalized = false)
+      : name(name),
+        type(type),
+        offset(0),
+        normalized(normalized),
+        size(GetShaderTypeSize(type)) {}
 
-	class BufferLayout {
-	public:
-		BufferLayout() = default;
-		BufferLayout(const std::initializer_list<BufferElement>& elements)
-			: m_Elements(elements) {
-			uint32_t offset = 0;
-			for (auto& element : m_Elements) {
-				element.Offset = offset;
-				offset += element.Size;
-				m_Stride += element.Size;
-			}
-		}
+  uint8_t GetComponentCount() const {
+    switch (type) {
+      case ShaderType::kFloat:
+        return 1;
+      case ShaderType::kFloat2:
+        return 2;
+      case ShaderType::kFloat3:
+        return 3;
+      case ShaderType::kFloat4:
+        return 4;
+      case ShaderType::kMatrix3:
+        return 3;
+      case ShaderType::kMatrix4:
+        return 4;
+      case ShaderType::kInt:
+        return 1;
+      case ShaderType::kInt2:
+        return 2;
+      case ShaderType::kInt3:
+        return 3;
+      case ShaderType::kInt4:
+        return 4;
+      case ShaderType::kBool:
+        return 1;
+      default:
+        return 0;
+    }
+  }
+};
 
-		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
-		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
-		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+class BufferLayout {
+ public:
+  BufferLayout() = default;
+  BufferLayout(const std::initializer_list<BufferElement>& elements)
+      : elements_(elements) {
+    size_t offset = 0;
+    for (BufferElement& element : elements_) {
+      element.offset = offset;
+      offset += element.size;
+      stride_ += element.size;
+    }
+  }
 
-		inline uint32_t GetStride() const { return m_Stride; }
-		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
-	private:
-		uint32_t m_Stride = 0;
-		std::vector<BufferElement> m_Elements;
-	};
+  inline std::vector<BufferElement>::iterator begin() {
+    return elements_.begin();
+  }
+  inline std::vector<BufferElement>::iterator end() { return elements_.end(); }
 
-	class VertexBuffer {
-	public:
-		virtual ~VertexBuffer() = default;
+  inline std::vector<BufferElement>::reverse_iterator rbegin() {
+    return elements_.rbegin();
+  }
+  inline std::vector<BufferElement>::reverse_iterator rend() {
+    return elements_.rend();
+  }
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+  inline std::vector<BufferElement>::const_iterator begin() const {
+    return elements_.begin();
+  }
+  inline std::vector<BufferElement>::const_iterator end() const {
+    return elements_.end();
+  }
 
-		virtual const BufferLayout& GetLayout() const = 0;
-		virtual void SetLayout(const BufferLayout& layout) = 0;
+  inline std::vector<BufferElement>::const_reverse_iterator rbegin() const {
+    return elements_.rbegin();
+  }
+  inline std::vector<BufferElement>::const_reverse_iterator rend() const {
+    return elements_.rend();
+  }
 
-		// Dynamic Vertex Buffer creation
-		static Ref<VertexBuffer> Create(uint32_t size);
-		// Static Vertex Buffer creation
-		static Ref<VertexBuffer> Create(const void* data, uint32_t size);
-	};
+  inline size_t GetStride() const { return stride_; }
+  inline const std::vector<BufferElement>& GetElements() const {
+    return elements_;
+  }
 
-	class IndexBuffer {
-	public:
-		virtual ~IndexBuffer() = default;
+ private:
+  size_t stride_ = 0;
+  std::vector<BufferElement> elements_;
+};
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+class VertexBuffer {
+ public:
+  virtual ~VertexBuffer() = default;
 
-		virtual uint32_t GetCount() const = 0;
+  virtual void Bind() = 0;
+  virtual void Unbind() = 0;
+  virtual void SetData(const void* data, size_t size, size_t offset = 0) = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t* data, uint32_t count);
-	};
+  inline virtual uint32_t GetId() const = 0;
 
-	class ShaderStorageBuffer {
-	public:
-		virtual ~ShaderStorageBuffer() = default;
+  inline virtual const BufferLayout& GetLayout() const = 0;
+  inline virtual void SetLayout(const BufferLayout& layout) = 0;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-		virtual void BindBase(uint32_t index) = 0;
+  static Ref<VertexBuffer> Create(size_t size);
+  static Ref<VertexBuffer> Create(const void* data, size_t size);
+};
 
-		virtual void SetData(const uint64_t* data, uint32_t size, uint32_t offset = 0) = 0;
+class IndexBuffer {
+ public:
+  virtual ~IndexBuffer() = default;
 
-		// Dynamic Shader Storage Buffer creation
-		static Ref<ShaderStorageBuffer> Create(uint32_t size);
-		// Static Shader Storage Buffer creation
-		static Ref<ShaderStorageBuffer> Create(const void* data, uint32_t size);
-	};
+  virtual void Bind() = 0;
+  virtual void Unbind() = 0;
 
-	using IndexBufferRef = Ref<IndexBuffer>;
-	using VertexBufferRef = Ref<VertexBuffer>;
-	using ShaderStorageBufferRef = Ref<ShaderStorageBuffer>;
+  inline virtual uint32_t GetId() const = 0;
+  inline virtual size_t GetCount() const = 0;
 
-}
+  static Ref<IndexBuffer> Create(const void* data, size_t count);
+};
+
+// ShdSBuffer = Shader Storage Buffer
+class ShdSBuffer {
+ public:
+  virtual ~ShdSBuffer() = default;
+
+  virtual void Bind() = 0;
+  virtual void Unbind() = 0;
+  virtual void BindBase(uint32_t index) = 0;
+
+  virtual void SetData(const void* data, size_t size, size_t offset = 0) = 0;
+
+  inline virtual uint32_t GetId() const = 0;
+
+  static Ref<ShdSBuffer> Create(size_t size);
+  static Ref<ShdSBuffer> Create(const void* data, size_t size);
+};
+
+using ShdSBufferRef = Ref<ShdSBuffer>;
+using IndexBufferRef = Ref<IndexBuffer>;
+using VertexBufferRef = Ref<VertexBuffer>;
+
+}  // namespace cosair

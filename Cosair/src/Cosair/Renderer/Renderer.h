@@ -1,67 +1,82 @@
 #pragma once
 
-#include "Texture.h"
-#include "VertexArray.h"
+#include "bindless_textures_manager.h"
+#include "texture.h"
+#include "vertex_array.h"
 
-namespace Cosair {
+namespace cosair {
 
-	struct QuadVertex {
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float     TexIndex;
-	};
+struct QuadVertex {
+  glm::vec3 position;
+  glm::vec4 color;
+  glm::vec2 tex_coord;
+  float tex_index;
+};
 
-	struct Statistics {
-		uint32_t DrawCalls = 0;
-		uint32_t QuadCount = 0;
+struct Statistics {
+  uint32_t draw_calls = 0;
+  uint32_t quad_count = 0;
 
-	#ifdef CR_EXT_RENDER_STATS
-		inline uint32_t GetTotalIndexCount() const { return QuadCount * 6; }
-		inline uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
-	#else
-		inline uint32_t GetTotalIndexCount() const { return 0; }
-		inline uint32_t GetTotalVertexCount() const { return 0; }
-	#endif
-	};
+#ifdef CR_EXT_RENDER_STATS
+  inline uint32_t GetTotalIndexCount() const { return quad_count * 6; }
+  inline uint32_t GetTotalVertexCount() const { return quad_count * 4; }
+#else
+  inline uint32_t GetTotalIndexCount() const { return 0; }
+  inline uint32_t GetTotalVertexCount() const { return 0; }
+#endif
+};
 
-	struct RendererData2D {
-		uint32_t MaxQuads;
-		uint32_t IndiciesCount;
-		uint32_t VerticiesCount;
+struct RendererData2D {
+  size_t max_quads = 0;
+  size_t indicies_count = 0;
+  size_t verticies_count = 0;
 
-		uint32_t QuadIndexCount = 0;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
-		QuadVertex* QuadVertexBufferBase = nullptr;
+  size_t quad_index_count = 0;
+  QuadVertex* quad_vertex_buffer_ptr = nullptr;
+  QuadVertex* quad_vertex_buffer_base = nullptr;
 
-		glm::vec4 QuadVertexPositions[4];
+  glm::vec4 quad_vertex_positions[4]{{-0.5f, -0.5f, 0.0f, 1.0f},
+                                     {0.5f, -0.5f, 0.0f, 1.0f},
+                                     {0.5f, 0.5f, 0.0f, 1.0f},
+                                     {-0.5f, 0.5f, 0.0f, 1.0f}};
 
-		VertexArrayRef QuadVertexArray;
-		VertexBufferRef QuadVertexBuffer;
-		glm::mat4 ViewProjectionMatrix { 1 };
+  VertexArrayRef quad_vertex_array;
+  VertexBufferRef quad_vertex_buffer;
+  glm::mat4 view_proj_matrix{1};
 
-	#ifdef CR_EXT_BINDLESS_TEXS
-		Scope<uint64_t> TextureHandles;
-		uint32_t TextureHandlesSize = 0;
-		bool FlushTextureHandles = false;
-		ShaderStorageBufferRef ShaderStorageBuffer;
-	#else
-		// Max actively bind textures per draw call
-		// If you want to remove this limit, just enable the 'Bindless Textures' extension and everything is set
-		static const uint32_t MaxTextureSlots = 32;
+#ifdef CR_EXT_BINDLESS_TEXS
+  BindlessTexturesManagerRef bindless_textures_manager = nullptr;
+#else
+  // Max actively bind textures per draw call
+  static const uint32_t kMaxTextureSlots = 32;
 
-		uint32_t TextureSlotIndex = 0;
-		std::array<Texture2dRef, MaxTextureSlots> TextureSlots;
-	#endif
+  uint32_t texture_slots_index = 0;
+  std::array<Texture2dRef, kMaxTextureSlots> texture_slots;
+#endif
 
-		Statistics Stats;
+  Statistics stats;
 
-		RendererData2D(uint32_t maxQuads) : MaxQuads(maxQuads), VerticiesCount(maxQuads * 4), IndiciesCount(maxQuads * 6) { }
-		RendererData2D() : RendererData2D(10000) { }
-	};
+  RendererData2D() = default;
+  RendererData2D(size_t max_quads
+#ifdef CR_EXT_BINDLESS_TEXS
+                 ,
+                 size_t max_bindless_textures
+#endif
+                 )
+      : max_quads(max_quads),
+        verticies_count(max_quads * 4),
+        indicies_count(max_quads * 6)
+#ifdef CR_EXT_BINDLESS_TEXS
+        ,
+        bindless_textures_manager(
+            CreateRef<BindlessTexturesManager>(max_bindless_textures))
+#endif
+  {
+  }
+};  // namespace cosair
 
-	class Renderer {
-		// TODO: Add Submit function
-	};
+class Renderer {
+  // TODO: Add Submit function
+};
 
-}
+}  // namespace cosair

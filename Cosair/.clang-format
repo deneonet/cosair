@@ -1,0 +1,4 @@
+BasedOnStyle: Google
+IncludeCategories:
+  - Regex: '"crpch.h"'
+    Priority: -1000

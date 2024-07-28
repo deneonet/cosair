@@ -1,35 +1,37 @@
 #include "crpch.h"
-#include "Shader.h"
 
-#include "Platform/OpenGL/OpenGLShader.h"
-#include "RendererAPI.h"
+#include "shader.h"
 
-namespace Cosair {
+#include "platforms/opengl/opengl_shader.h"
+#include "renderer_api.h"
 
-	ShaderRef Shader::Create(const std::string& filepath) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("No renderer API specified: RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLShader>(filepath);
-		}
+namespace cosair {
 
-		CR_CORE_DERROR("API is not supported by the specified platform");
-		return nullptr;
-	}
+ShaderRef Shader::Create(const std::string& filepath) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLShader>(filepath);
+  }
 
-	ShaderRef Shader::Create(const std::string& vertexFilepath, const std::string& fragmentFilepath) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("No renderer API specified: RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLShader>(vertexFilepath, fragmentFilepath);
-		}
-
-		CR_CORE_DERROR("API is not supported by the specified platform");
-		return nullptr;
-	}
-
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
 }
+
+ShaderRef Shader::Create(const std::string& vertex_filepath,
+                         const std::string& fragment_filepath) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLShader>(vertex_filepath, fragment_filepath);
+  }
+
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
+}
+
+}  // namespace cosair

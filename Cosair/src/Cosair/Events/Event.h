@@ -1,78 +1,99 @@
 #pragma once
 
-#include "Cosair/Core.h"
-
 #include <spdlog/formatter.h>
 
-namespace Cosair {
+#include <sstream>
 
-	enum class EventType {
-		None = 0,
-		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased,
-		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
-	};
+#include "cosair/core.h"
 
-	enum EventCategory {
-		None = 0,
-		EventCategoryApplication = BIT(0),
-		EventCategoryWindow = BIT(1),
-		EventCategoryInput = BIT(2),
-		EventCategoryKeyboard = BIT(3),
-		EventCategoryMouse = BIT(4),
-		EventCategoryMouseButton = BIT(5),
-	};
+namespace cosair {
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
-virtual EventType GetEventType() const override { return GetStaticType(); }\
-virtual const char* GetName() const override { return #type; }
+enum class EventType {
+  kNone = 0,
+  kWindowClose,
+  kWindowResize,
+  kWindowFocus,
+  kWindowLostFocus,
+  kWindowMoved,
+  kAppTick,
+  kAppUpdate,
+  kAppRender,
+  kKeyPressed,
+  kKeyReleased,
+  kMouseButtonPressed,
+  kMouseButtonReleased,
+  kMouseMoved,
+  kMouseScrolled
+};
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+enum EventCategory {
+  kNone = 0,
+  kEventCategoryApplication = BIT(0),
+  kEventCategoryWindow = BIT(1),
+  kEventCategoryInput = BIT(2),
+  kEventCategoryKeyboard = BIT(3),
+  kEventCategoryMouse = BIT(4),
+  kEventCategoryMouseButton = BIT(5),
+};
 
-	class Event {
-		friend class EventDispatcher;
-	public:
-		bool Handled = false;
-	public:
-		virtual EventType GetEventType() const = 0;
-		virtual const char* GetName() const = 0;
-		virtual int GetCategoryFlags() const = 0;
+#define EVENT_CLASS_TYPE(type)                                                \
+  static EventType GetStaticType() { return EventType::##type; }              \
+  virtual EventType GetEventType() const override { return GetStaticType(); } \
+  virtual const char* GetName() const override { return #type; }
 
-		// Debugging Purpose Only
-		virtual std::string ToString() const { return GetName(); }
+#define EVENT_CLASS_CATEGORY(category) \
+  virtual int GetCategoryFlags() const override { return category; }
 
-		inline bool IsInCategory(EventCategory category) const {
-			return GetCategoryFlags() & category;
-		}
-	};
+class Event {
+  friend class EventDispatcher;
 
-	class EventDispatcher {
-	public:
-		EventDispatcher(Event& event) : m_Event(event) { }
+ public:
+  virtual EventType GetEventType() const = 0;
+  virtual const char* GetName() const = 0;
+  virtual int GetCategoryFlags() const = 0;
 
-		template<typename T, typename F>
-		bool Dispatch(const F& func) {
-			if (m_Event.GetEventType() == T::GetStaticType()) {
-				m_Event.Handled = func(static_cast<T&>(m_Event));
-				return true;
-			}
-			return false;
-		}
-	private:
-		Event& m_Event;
-	};
+  // Debugging Purpose Only
+  virtual std::string ToString() const { return GetName(); }
 
-	inline std::ostream& operator<<(std::ostream& os, const Event& event) {
-		return os << event.ToString();
-	}
+  inline bool IsInCategory(EventCategory category) const {
+    return GetCategoryFlags() & category;
+  }
+
+  inline bool IsHandled() const { return handled_; }
+  inline void SetHandled(bool handled) { handled_ = handled; }
+
+ private:
+  bool handled_ = false;
+};
+
+class EventDispatcher {
+ public:
+  EventDispatcher(Event& event) : event_(event) {}
+
+  template <typename T, typename F>
+  bool Dispatch(const F& func) {
+    if (event_.GetEventType() == T::GetStaticType()) {
+      event_.SetHandled(func(static_cast<T&>(event_)));
+      return true;
+    }
+    return false;
+  }
+
+ private:
+  Event& event_;
+};
+
+inline std::ostream& operator<<(std::ostream& os, const Event& event) {
+  return os << event.ToString();
 }
 
-template<typename T>
+}  // namespace cosair
+
+template <typename T>
 struct fmt::formatter<
-	T, std::enable_if_t<std::is_base_of<Cosair::Event, T>::value, char>>
-	: fmt::formatter<std::string> {
-	auto format(const T& event, fmt::format_context& ctx) {
-		return fmt::format_to(ctx.out(), "{}", event.ToString());
-	}
+    T, std::enable_if_t<std::is_base_of<cosair::Event, T>::value, char>>
+    : fmt::formatter<std::string> {
+  auto format(const T& event, fmt::format_context& ctx) {
+    return fmt::format_to(ctx.out(), "{}", event.ToString());
+  }
 };

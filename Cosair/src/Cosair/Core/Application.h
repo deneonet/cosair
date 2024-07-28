@@ -1,61 +1,58 @@
 #pragma once
 
-#include "Layer.h"
-#include "LayerStack.h"
-#include "Timestep.h"
-#include "Window.h"
+#include "cosair/core.h"
+#include "cosair/debug/imgui_layer.h"
+#include "cosair/events/event.h"
+#include "cosair/events/window_event.h"
+#include "layer.h"
+#include "layer_stack.h"
+#include "timestep.h"
+#include "window.h"
 
-#include "Cosair/Core.h"
-
-#include "Cosair/Debug/ImGuiLayer.h"
-
-#include "Cosair/Renderer/Buffer.h"
-#include "Cosair/Renderer/Camera.h"
-#include "Cosair/Renderer/Shader.h"
-#include "Cosair/Renderer/VertexArray.h"
-
-#include "Cosair/Events/Event.h"
-#include "Cosair/Events/WindowEvent.h"
-
-#define CR_BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
+#define CR_BIND_EVENT_FN(x) \
+  std::bind(&Application::x, this, std::placeholders::_1)
 
 int main(int argc, char** argv);
 
-namespace Cosair {
+namespace cosair {
 
-	class Application {
-	public:
-		Application();
-		virtual ~Application();
+class Application {
+ public:
+  Application();
+  virtual ~Application();
 
-		void OnEvent(Event& e);
+  void OnEvent(Event& event);
 
-		void PushLayer(Layer* layer);
-		void PopLayer(Layer* layer);
-		void PushOverlay(Layer* layer);
-		void PopOverlay(Layer* layer);
+  void PushLayer(Layer* layer);
+  void PopLayer(Layer* layer);
+  void PushOverlay(Layer* layer);
+  void PopOverlay(Layer* layer);
 
-		inline Window& GetWindow() { return *m_Window; }
-		inline static Application& Get() { return *s_Instance; }
-	private:
-		void Run();
-		bool OnWindowClose(WindowCloseEvent& e);
-		bool OnWindowResize(WindowResizeEvent& e);
-	private:
-		LayerStack m_LayerStack;
-		ImGuiLayer* m_ImGuiLayer;
+  inline Window& GetWindow() { return *window_; }
+  inline static Application& Get() { return *instance_; }
 
-		float m_LastFrameTime = 0;
+ private:
+  void Run();
+  bool OnWindowClose(WindowCloseEvent& e);
+  bool OnWindowResize(WindowResizeEvent& e);
 
-		bool m_Running = false;
-		bool m_Minimized = false;
-		std::unique_ptr<Window> m_Window;
-	private:
-		static Application* s_Instance;
-		friend int ::main(int argc, char** argv);
-	};
+ private:
+  LayerStack layer_stack_;
+  ImGuiLayer* imgui_layer_;
 
-	Application* CreateApplication();
+  float last_frame_time_ = 0;
 
-}
+  bool running_ = false;
+  bool minimized_ = false;
+  std::unique_ptr<Window> window_;
 
+ private:
+  static Application* instance_;
+#ifdef CR_PLATFORM_WINDOWS
+  friend int ::main(int argc, char** argv);
+#endif
+};
+
+Application* CreateApplication();
+
+}  // namespace cosair

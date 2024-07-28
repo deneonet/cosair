@@ -36,10 +36,23 @@
 // EXTENSIONS //////////////
 ////////////////////////////
 
-#define CR_EXT_BINDLESS_TEXS // Enables bindless textures
+#ifndef CR_DIST
+#define CR_EXT_IMGUI    // Enables imgui
+#define CR_EXT_LOGGING  // Enables logging
+#endif
+
+#if 0
+#define CR_DB_ON_ERRORS  // Calls '__debug_break();' on every error that
+// occoured
+#endif
+
+#define CR_EXT_BINDLESS_TEXS     // Enables bindless textures
+#define CR_EXT_NATIVE_SCRIPTING  // Enables native (C++) scripting, using
+                                 // NativeScript components
 
 #ifdef CR_DEBUG
-#define CR_EXT_RENDER_STATS // Access to render statistics, like quad count, draw calls...
+#define CR_EXT_RENDER_STATS  // Access to render statistics, like quad count,
+                             // draw calls...
 #endif
 
 ////////////////////////////
@@ -50,13 +63,17 @@
 #define CR_ENABLE_ASSERTS
 #endif
 
-#if defined CR_DIST && !defined CR_FORCE_SECURITY_CHECKS
-#define CR_STRIP_SECURITY_CHECKS
-#endif
-
 #if defined CR_ENABLE_ASSERTS && !defined CR_DISABLE_ASSERTS
-#define CR_ASSERT(x, ...) { if(!(x)) { CR_ERROR(__VA_ARGS__); __debugbreak(); } }
-#define CR_CORE_ASSERT(x, ...) { if(!(x)) { CR_CORE_ERROR(__VA_ARGS__); __debugbreak(); } }
+#define CR_ASSERT(x, ...)  \
+  if (!(x)) {              \
+    CR_ERROR(__VA_ARGS__); \
+    __debugbreak();        \
+  }
+#define CR_CORE_ASSERT(x, ...)  \
+  if (!(x)) {                   \
+    CR_CORE_ERROR(__VA_ARGS__); \
+    __debugbreak();             \
+  }
 #else
 #define CR_ASSERT(x, ...)
 #define CR_CORE_ASSERT(x, ...)
@@ -64,10 +81,22 @@
 
 #define BIT(x) (1 << x)
 
-namespace Cosair {
-	template<typename T>
-	using Scope = std::unique_ptr<T>;
+namespace cosair {
 
-	template<typename T>
-	using Ref = std::shared_ptr<T>;
+template <typename T>
+using Scope = std::unique_ptr<T>;
+
+template <typename T>
+using Ref = std::shared_ptr<T>;
+
+template <typename T, typename... Args>
+Scope<T> CreateScope(Args&&... args) {
+  return std::make_unique<T>(std::forward<Args>(args)...);
 }
+
+template <typename T, typename... Args>
+Ref<T> CreateRef(Args&&... args) {
+  return std::make_shared<T>(std::forward<Args>(args)...);
+}
+
+}  // namespace cosair

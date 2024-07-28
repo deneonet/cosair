@@ -1,4 +1,4 @@
-workspace "Cosair"
+workspace "cosair"
 	architecture "x86_64"
 	startproject "Sandbox"
 
@@ -16,19 +16,20 @@ workspace "Cosair"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 includeDir = {}
 
-includeDir["glm"] = "Cosair/vendor/glm"
-includeDir["imgui"] = "Cosair/vendor/imgui"
-includeDir["GLFW"] = "Cosair/vendor/GLFW/include"
-includeDir["glad"] = "Cosair/vendor/glad/include"
-includeDir["stb_image"] = "Cosair/vendor/stb_image"
-includeDir["spdlog"] = "Cosair/vendor/spdlog/include"
+includeDir["glm"] = "cosair/vendor/glm"
+includeDir["entt"] = "cosair/vendor/entt"
+includeDir["imgui"] = "cosair/vendor/imgui"
+includeDir["GLFW"] = "cosair/vendor/GLFW/include"
+includeDir["glad"] = "cosair/vendor/glad/include"
+includeDir["stb_image"] = "cosair/vendor/stb_image"
+includeDir["spdlog"] = "cosair/vendor/spdlog/include"
 
-include "Cosair/vendor/glad"
-include "Cosair/vendor/GLFW"
-include "Cosair/vendor/imgui"
+include "cosair/vendor/glad"
+include "cosair/vendor/GLFW"
+include "cosair/vendor/imgui"
 
-project "Cosair"
-	location "Cosair"
+project "cosair"
+	location "cosair"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
@@ -38,11 +39,12 @@ project "Cosair"
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "crpch.h"
-	pchsource "Cosair/src/crpch.cpp"
+	pchsource "cosair/src/crpch.cpp"
 
 	files {
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/entt/entt.hpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl",
 		"%{prj.name}/vendor/stb_image/**.h",
@@ -52,6 +54,7 @@ project "Cosair"
 	includedirs {
 		"%{prj.name}/src",
 		"%{includeDir.glm}",
+		"%{includeDir.entt}",
 		"%{includeDir.GLFW}",
 		"%{includeDir.glad}",
 		"%{includeDir.imgui}",
@@ -116,6 +119,7 @@ project "Sandbox"
 		"Cosair/src",
 		"Cosair/vendor",
 		"%{includeDir.glm}",
+		"%{includeDir.entt}",
 		"Cosair/vendor/spdlog/include",
 	}
 

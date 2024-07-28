@@ -20,6 +20,12 @@ A 2D Game Engine written in C++, following ["The Cherno's Game Engine Series"](h
 
 [Sandbox & Flappybird](Sandbox/src/README.md)
 
+## Todos:
+
+- Activating/Deactivating entities.
+- Currently deleting textures with bindless texture handles is not correctly working.
+- Other TODOs in the src.
+
 ## Plans
 
 #### Little bit excessive, but plans, in which direction I want to go with this game engine

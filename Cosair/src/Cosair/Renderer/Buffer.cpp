@@ -1,69 +1,75 @@
 #include "crpch.h"
-#include "Buffer.h"
 
-#include "Platform/OpenGL/OpenGLBuffer.h"
-#include "RendererAPI.h"
+#include "buffer.h"
 
-namespace Cosair {
+#include "platforms/opengl/opengl_buffer.h"
+#include "renderer_api.h"
 
-	VertexBufferRef VertexBuffer::Create(const void* data, uint32_t size) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLVertexBuffer>(data, size);
-		}
-		CR_CORE_DERROR("Unknown RendererAPI");
-		return nullptr;
-	}
+namespace cosair {
 
-	VertexBufferRef VertexBuffer::Create(uint32_t size) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLVertexBuffer>(size);
-		}
-		CR_CORE_DERROR("Unknown RendererAPI");
-		return nullptr;
-	}
+VertexBufferRef VertexBuffer::Create(const void* data, size_t size) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLVertexBuffer>(data, size);
+  }
 
-	ShaderStorageBufferRef ShaderStorageBuffer::Create(const void* data, uint32_t size) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLShaderStorageBuffer>(data, size);
-		}
-		CR_CORE_DERROR("Unknown RendererAPI");
-		return nullptr;
-	}
-
-	ShaderStorageBufferRef ShaderStorageBuffer::Create(uint32_t size) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLShaderStorageBuffer>(size);
-		}
-		CR_CORE_DERROR("Unknown RendererAPI");
-		return nullptr;
-	}
-
-	IndexBufferRef IndexBuffer::Create(const uint32_t* data, uint32_t count) {
-		switch (RendererAPI::GetCurrentAPI()) {
-		case RendererAPI::API::None:
-			CR_CORE_DERROR("RendererAPI::None is currently not supported");
-			return nullptr;
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<OpenGLIndexBuffer>(data, count);
-		}
-		CR_CORE_DERROR("Unknown RendererAPI");
-		return nullptr;
-	}
-
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
 }
+
+VertexBufferRef VertexBuffer::Create(size_t size) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLVertexBuffer>(size);
+  }
+
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
+}
+
+ShdSBufferRef ShdSBuffer::Create(const void* data, size_t size) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLShdSBuffer>(data, size);
+  }
+
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
+}
+
+ShdSBufferRef ShdSBuffer::Create(size_t size) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLShdSBuffer>(size);
+  }
+
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
+}
+
+IndexBufferRef IndexBuffer::Create(const void* data, size_t count) {
+  switch (RendererApi::GetApi()) {
+    case RendererApi::Api::kNone:
+      CR_CORE_CRITICAL("RendererApi::kNone is not supported");
+      return nullptr;
+    case RendererApi::Api::kOpenGL:
+      return std::make_shared<OpenGLIndexBuffer>(data, count);
+  }
+
+  CR_CORE_CRITICAL("Unknown RendererApi");
+  return nullptr;
+}
+
+}  // namespace cosair

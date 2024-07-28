@@ -1,55 +1,69 @@
 #pragma once
 
-#include "Cosair/Core.h"
-
-#if 1 // VS formats the includes, so the below include would be at the bottom, which would result into linking errors
 #include <spdlog/spdlog.h>
-#endif
+// clang-format off
 #include <spdlog/fmt/ostr.h>
 
-namespace Cosair {
+#include "Cosair/Core.h"
 
-	class Log {
-	public:
-		static void Init();
+namespace cosair {
 
-		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
-	private:
-		static std::shared_ptr<spdlog::logger> s_CoreLogger;
-		static std::shared_ptr<spdlog::logger> s_ClientLogger;
-	};
+class Log {
+ public:
+  static void Init();
 
-}
+  inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() {
+    return core_logger_;
+  }
+  inline static std::shared_ptr<spdlog::logger>& GetClientLogger() {
+    return client_logger_;
+  }
 
-#ifdef CR_DIST
+ private:
+  static std::shared_ptr<spdlog::logger> core_logger_;
+  static std::shared_ptr<spdlog::logger> client_logger_;
+};
 
-#define CR_CORE_CRITICAL(...)
-#define CR_CORE_DERROR(...)
-#define CR_CORE_ERROR(...)
+}  // namespace cosair
+
+#define CR_CORE_CRITICAL(...)                            \
+  ::cosair::Log::GetCoreLogger()->critical(__VA_ARGS__); \
+  __debugbreak();
+
+#define CR_CRITICAL(...)                                   \
+  ::cosair::Log::GetClientLogger()->critical(__VA_ARGS__); \
+  __debugbreak();
+
+#ifdef CR_DB_ON_ERRORS
+
+#define CR_ERROR(...) ::cosair::Log::GetClientLogger()->error(__VA_ARGS__); __debugbreak();
+#define CR_CORE_ERROR(...) ::cosair::Log::GetCoreLogger()->error(__VA_ARGS__); __debugbreak();
+
+#else
+
+#define CR_ERROR(...) ::cosair::Log::GetClientLogger()->error(__VA_ARGS__)
+#define CR_CORE_ERROR(...) ::cosair::Log::GetCoreLogger()->error(__VA_ARGS__)
+
+#endif
+
+#ifdef CR_EXT_LOGGING
+
+#define CR_CORE_WARN(...) ::cosair::Log::GetCoreLogger()->warn(__VA_ARGS__)
+#define CR_CORE_INFO(...) ::cosair::Log::GetCoreLogger()->info(__VA_ARGS__)
+#define CR_CORE_TRACE(...) ::cosair::Log::GetCoreLogger()->trace(__VA_ARGS__)
+
+#define CR_WARN(...) ::cosair::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define CR_INFO(...) ::cosair::Log::GetClientLogger()->info(__VA_ARGS__)
+#define CR_TRACE(...) ::cosair::Log::GetClientLogger()->trace(__VA_ARGS__)
+
+#else
+
 #define CR_CORE_WARN(...)
 #define CR_CORE_INFO(...)
 #define CR_CORE_TRACE(...)
 
-#define CR_CRITICAL(...)
-#define CR_ERROR(...)
 #define CR_WARN(...)
 #define CR_INFO(...)
 #define CR_TRACE(...)
-
-#else
-
-#define CR_CORE_CRITICAL(...)  ::Cosair::Log::GetCoreLogger()->critical(__VA_ARGS__)
-#define CR_CORE_DERROR(...)    ::Cosair::Log::GetCoreLogger()->error(__VA_ARGS__); __debugbreak();
-#define CR_CORE_ERROR(...)     ::Cosair::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define CR_CORE_WARN(...)      ::Cosair::Log::GetCoreLogger()->warn(__VA_ARGS__)
-#define CR_CORE_INFO(...)      ::Cosair::Log::GetCoreLogger()->info(__VA_ARGS__)
-#define CR_CORE_TRACE(...)     ::Cosair::Log::GetCoreLogger()->trace(__VA_ARGS__)
-
-#define CR_CRITICAL(...)  ::Cosair::Log::GetClientLogger()->critical(__VA_ARGS__)
-#define CR_ERROR(...)     ::Cosair::Log::GetClientLogger()->error(__VA_ARGS__)
-#define CR_WARN(...)      ::Cosair::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define CR_INFO(...)      ::Cosair::Log::GetClientLogger()->info(__VA_ARGS__)
-#define CR_TRACE(...)     ::Cosair::Log::GetClientLogger()->trace(__VA_ARGS__)
 
 #endif

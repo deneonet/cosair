@@ -1,77 +1,80 @@
 #pragma once
 
-#include "Renderer.h"
-#include "Shader.h"
-#include "Texture.h"
-#include "TextureAtlas.h"
-
 #include <variant>
 
-namespace Cosair {
+#include "renderer.h"
+#include "shader.h"
+#include "texture.h"
+#include "texture_atlas.h"
 
-	class Material {
-	public:
-		Material(const ShaderRef& shader = s_FlatColorShader) : m_Shader(shader) { }
+namespace cosair {
 
-		static void Init();
-		static void NewFrame() { s_SetViewProjMatrix = true; }
+class Material {
+ public:
+  Material(const ShaderRef& shader = flat_color_shader_) : shader_(shader) {}
 
-		float Bind(RendererData2D& data);
+  static void Init();
+  static void FlushViewProjMatrix() { flush_viewproj_matrix_ = true; }
 
-		void RemoveTexture();
-		void SetTexture(const Texture2dRef& texture);
-		inline const Texture2dRef& GetTexture() const { return m_Texture; }
+  float Bind(RendererData2D& data);
 
-		// To remove the Sub-Texture, use 'Material::RemoveTexture()'
-		void SetSubTexture(const char* subTextureName);
-		inline void SetTextureAtlas(const TextureAtlasRef& textureAtlas) { m_TextureAtlas = textureAtlas; }
+  void RemoveTexture();
+  void SetTexture(const Texture2dRef& texture);
+  inline const Texture2dRef& GetTexture() const { return texture_; }
 
-		inline const TextureCoords& GetTextureCoords() const { return m_TextureCoords; }
+  // To remove the Sub-Texture, use 'Material::RemoveTexture()'
+  void SetSubTexture(const char* sub_texture_name);
+  inline void SetTextureAtlas(const TextureAtlasRef& texture_atlas) {
+    texture_atlas_ = texture_atlas;
+  }
 
-		void SetColor(const glm::vec4 color) { m_Color = color; }
-		inline const glm::vec4& GetColor() const { return m_Color; }
+  inline const TextureCoords& GetTextureCoords() const {
+    return texture_coords_;
+  }
 
-		inline const ShaderRef& GetShader() const { return m_Shader; }
+  void SetColor(const glm::vec4 color) { color_ = color; }
+  inline const glm::vec4& GetColor() const { return color_; }
 
-		template<typename T>
-		inline void Set(const std::string& name, const T& value) {
-			static_assert(
-				std::is_same_v<T, glm::mat4> || std::is_same_v<T, glm::mat3> ||
-				std::is_same_v<T, glm::vec4> || std::is_same_v<T, glm::vec3> ||
-				std::is_same_v<T, glm::vec2> || std::is_same_v<T, float> ||
-				std::is_same_v<T, glm::ivec4> || std::is_same_v<T, glm::ivec3> ||
-				std::is_same_v<T, glm::ivec2> || std::is_same_v<T, int> ||
-				std::is_same_v<T, int*>,
-				"Invalid Type, supported types are: glm::mat4, glm::mat3, glm::vec4, glm::vec3, glm::vec2, float, glm::ivec4, glm::ivec3, glm::ivec2, int and int*"
-				);
-			m_ShaderVars[name] = value;
-		}
+  inline const ShaderRef& GetShader() const { return shader_; }
 
-	private:
-		void SetShaderVars();
+  template <typename T>
+  inline void Set(const std::string& name, const T& value) {
+    static_assert(
+        std::is_same_v<T, glm::mat4> || std::is_same_v<T, glm::mat3> ||
+            std::is_same_v<T, glm::vec4> || std::is_same_v<T, glm::vec3> ||
+            std::is_same_v<T, glm::vec2> || std::is_same_v<T, float> ||
+            std::is_same_v<T, glm::ivec4> || std::is_same_v<T, glm::ivec3> ||
+            std::is_same_v<T, glm::ivec2> || std::is_same_v<T, int> ||
+            std::is_same_v<T, int*>,
+        "Invalid Type, supported types are: glm::mat4, glm::mat3, glm::vec4, "
+        "glm::vec3, glm::vec2, float, glm::ivec4, glm::ivec3, glm::ivec2, int "
+        "and int*");
+    shader_vars_[name] = value;
+  }
 
-	private:
-		static ShaderRef s_TextureShader;
-		static ShaderRef s_FlatColorShader;
+ private:
+  void SetShaderVars();
 
-		static bool s_SetViewProjMatrix;
+ private:
+  static ShaderRef texture_shader_;
+  static ShaderRef flat_color_shader_;
 
-	private:
-		ShaderRef m_Shader;
+  static bool flush_viewproj_matrix_;
 
-		glm::vec4 m_Color { 1 };
-		TextureCoords m_TextureCoords;
-		Texture2dRef m_Texture = nullptr;
-		TextureAtlasRef m_TextureAtlas = nullptr;
+ private:
+  ShaderRef shader_;
 
-		using ShaderVarValue = std::variant<
-			glm::mat4, glm::mat3,
-			glm::vec4, glm::vec3, glm::vec2, float,
-			glm::ivec4, glm::ivec3, glm::ivec2, int
-		>;
-		std::unordered_map<std::string, ShaderVarValue> m_ShaderVars;
-	};
+  glm::vec4 color_{1};
+  Texture2dRef texture_ = nullptr;
+  TextureCoords texture_coords_{};
+  TextureAtlasRef texture_atlas_ = nullptr;
 
-	using MaterialRef = Ref<Material>;
+  using ShaderVarValue =
+      std::variant<glm::mat4, glm::mat3, glm::vec4, glm::vec3, glm::vec2, float,
+                   glm::ivec4, glm::ivec3, glm::ivec2, int>;
+  std::unordered_map<std::string, ShaderVarValue> shader_vars_;
+};
 
-}
+using MaterialRef = Ref<Material>;
+
+}  // namespace cosair

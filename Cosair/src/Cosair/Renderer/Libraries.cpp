@@ -1,10 +1,12 @@
 #include "crpch.h"
-#include "Libraries.h"
 
-namespace Cosair {
+#include "libraries.h"
 
-	std::unordered_map<std::string, ShaderRef> ShaderLibrary::s_ShaderStorage;
-	std::unordered_map<std::string, MaterialRef> MaterialLibrary::s_MaterialStorage;
-	std::unordered_map<std::string, Texture2dRef> Texture2dLibrary::s_Texture2dStorage;
+namespace cosair {
 
-}
+std::unordered_map<std::string, Texture2dRef>
+    Texture2dLibrary::texture_2d_storage_;
+std::unordered_map<std::string, ShaderRef> ShaderLibrary::shader_storage_;
+std::unordered_map<std::string, MaterialRef> MaterialLibrary::material_storage_;
+
+}  // namespace cosair

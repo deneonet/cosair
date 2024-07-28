@@ -1,8 +1,9 @@
 #include "crpch.h"
-#include "Layer.h"
 
-namespace Cosair {
+#include "layer.h"
 
-	Layer::Layer(const std::string& name) : m_DebugName(name) { }
+namespace cosair {
 
-}
+Layer::Layer(const std::string& name) : debug_name_(name) {}
+
+}  // namespace cosair
