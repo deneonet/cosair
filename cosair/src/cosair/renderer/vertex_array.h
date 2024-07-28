@@ -21,4 +21,5 @@ class VertexArray {
 };
 
 using VertexArrayRef = Ref<VertexArray>;
+
 }  // namespace cosair

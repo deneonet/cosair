@@ -196,7 +196,7 @@ void Game::OnPlayerPassThroughGap() {
   cosair::MaterialRef& score_material_right =
       score_right.GetComponent<cosair::Mesh>().GetMaterial();
   if (score == 10) {
-    score_left.GetTransform().Set(glm::vec3(-0.063, 0.7f, 0), glm::vec3(0),
+    score_left.GetTransform().Set(glm::vec3(-0.063, 0.7f, 1.0f), glm::vec3(0),
                                   glm::vec3(0.1f));
     score_right.GetTransform().SetPosZ(1.0f);
   }
